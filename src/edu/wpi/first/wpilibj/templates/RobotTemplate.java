@@ -9,6 +9,7 @@ package edu.wpi.first.wpilibj.templates;
 
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SimpleRobot;
 
 /**
@@ -23,7 +24,25 @@ public class RobotTemplate extends SimpleRobot {
      * This function is called once each time the robot enters autonomous mode.
      */
     public void autonomous() {
-        
+        int turnTime = 500;
+        long startTime;
+        DigitalInput frontSensor = new DigitalInput(5);
+        RobotDrive drive = new RobotDrive(1,2,3,4);
+        while(frontSensor.get()){
+            drive.tankDrive(1, 1);
+        }
+        startTime = System.currentTimeMillis();
+        while(System.currentTimeMillis() - startTime < turnTime){
+            drive.tankDrive(1, -1);
+        }
+        while(frontSensor.get()){
+            drive.tankDrive(1, 1);
+        }
+        startTime = System.currentTimeMillis();
+        while(System.currentTimeMillis() - startTime < turnTime/3){
+            drive.tankDrive(1, -1);
+        }
+            
     }
 
     /**
@@ -31,10 +50,10 @@ public class RobotTemplate extends SimpleRobot {
      */
     public void operatorControl() {
         
-        DigitalInput test = new DigitalInput(1);
-        while(true){
-            System.out.println(test.get());
-        }
+        //DigitalInput test = new DigitalInput(1);
+        //while(true){
+            //System.out.println(test.get());
+        //}
     }
     
     /**
