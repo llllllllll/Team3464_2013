@@ -24,25 +24,11 @@ public class RobotTemplate extends SimpleRobot {
      * This function is called once each time the robot enters autonomous mode.
      */
     public void autonomous() {
-        int turnTime = 500;
-        long startTime;
         DigitalInput frontSensor = new DigitalInput(5);
         RobotDrive drive = new RobotDrive(1,2,3,4);
-        while(frontSensor.get()){
-            drive.tankDrive(1, 1);
-        }
-        startTime = System.currentTimeMillis();
-        while(System.currentTimeMillis() - startTime < turnTime){
-            drive.tankDrive(1, -1);
-        }
-        while(frontSensor.get()){
-            drive.tankDrive(1, 1);
-        }
-        startTime = System.currentTimeMillis();
-        while(System.currentTimeMillis() - startTime < turnTime/3){
-            drive.tankDrive(1, -1);
-        }
-            
+        while(frontSensor.get())
+            drive.tankDrive(.4, -.4);
+        
     }
 
     /**
@@ -50,12 +36,16 @@ public class RobotTemplate extends SimpleRobot {
      */
     public void operatorControl() {
         
-        //DigitalInput test = new DigitalInput(1);
-        //while(true){
-            //System.out.println(test.get());
-        //}
+        DigitalInput topSensor = new DigitalInput(5);
+        DigitalInput lowSensor = new DigitalInput(6);
+        RobotDrive drive = new RobotDrive(1,2,3,4);
+        while(topSensor.get() && isOperatorControl())
+            drive.tankDrive(.4, -.4);
+        long start = System.currentTimeMillis();
+        while(lowSensor.get() && isOperatorControl() && (System.currentTimeMillis() - start <= 30000))
+            drive.tankDrive(-.4, -.4);
     }
-    
+
     /**
      * This function is called once each time the robot enters test mode.
      */
