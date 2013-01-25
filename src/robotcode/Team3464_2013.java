@@ -1,6 +1,6 @@
 /* Team 3464 2013 robot code
- * @Authors: Joe Jevnik, Jack Pugmire, Zayd Salah, Trevor Aron, Thomas Bravo.
- * @Version: YoloBot1000
+ * @Authors: Joe Jevnik, Jack Pugmire, Zayd Salah, Trevor Aron, Tomas Bravo.
+ * @Version: YoloBot3000
  */
 package robotcode;
 
@@ -12,7 +12,10 @@ import edu.wpi.first.wpilibj.SimpleRobot;
 public class Team3464_2013 extends SimpleRobot {
     
     int forwardDriveTime = 1500;
-    
+    double autoSpeed = .5;
+    RobotDrive drive = new RobotDrive(1,3,2,4);
+    DigitalInput topSensor = new DigitalInput(1);
+    DigitalInput lowSensor = new DigitalInput(2);
     
     /**
      * The robot drives forward for forwardDriveTime, then spin clockwise until 
@@ -21,24 +24,23 @@ public class Team3464_2013 extends SimpleRobot {
      * wall and then deliver the Frisbees to the goal.
      */
     public void autonomous() {
-        DigitalInput topSensor = new DigitalInput(5);
-        DigitalInput lowSensor = new DigitalInput(6);
-        RobotDrive drive = new RobotDrive(1,2,3,4);
         long startTime = System.currentTimeMillis();
         while (System.currentTimeMillis() - startTime < forwardDriveTime)
-            drive.tankDrive(-.4, -.4);
-        while(topSensor.get() && isOperatorControl())
-            drive.tankDrive(.4, -.4);
-        while(lowSensor.get() && isOperatorControl())
-            drive.tankDrive(-.4, -.4);
+            drive.tankDrive(-autoSpeed, -autoSpeed);
+        while(topSensor.get() && isAutonomous())
+            drive.tankDrive(-autoSpeed, autoSpeed);
+        while(lowSensor.get() && isAutonomous())
+            drive.tankDrive(-autoSpeed, -autoSpeed);
         
     }
 
     /**
-     * This function is called once each time the robot enters operator control.
+     * 
      */
     public void operatorControl() {
-        
+        /*while(lowSensor.get() && isOperatorControl())
+            drive.tankDrive(-.4,-.4);
+        */
 //        DigitalInput topSensor = new DigitalInput(5);
 //        DigitalInput lowSensor = new DigitalInput(6);
 //        RobotDrive drive = new RobotDrive(1,2,3,4);
