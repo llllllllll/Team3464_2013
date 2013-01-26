@@ -18,7 +18,6 @@ public class Team3464_2013 extends SimpleRobot {
     DigitalInput lowSensor = new DigitalInput(2);
     
     long topTime = -1;
-    long lowTime = -1;
     long maxTimeDiff = 75;
     
     /**
@@ -32,8 +31,12 @@ public class Team3464_2013 extends SimpleRobot {
         while (System.currentTimeMillis() - startTime < forwardDriveTime)
             drive.tankDrive(-autoSpeed, -autoSpeed);        
         while(isAutonomous()) {
+            //If the topTime is -1, it hasn't been set yet.
             if(!topSensor.get() && topTime == -1)
                 topTime = System.currentTimeMillis();
+            //This might fix our corner case problem. We need the actual robot to test it, though.
+            //if(!lowSensor.get()) topTime = -1;
+            //If the time since top sensor was set is greater than max diff time, we need to check the low sensor.
             if((System.currentTimeMillis() - topTime >  maxTimeDiff) && topTime != -1) {
                 if(!lowSensor.get()) topTime = -1;
                 else break;
