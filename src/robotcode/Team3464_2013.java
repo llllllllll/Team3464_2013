@@ -17,6 +17,10 @@ public class Team3464_2013 extends SimpleRobot {
     DigitalInput topSensor = new DigitalInput(1);
     DigitalInput lowSensor = new DigitalInput(2);
     
+    long topTime = -1;
+    long lowTime = -1;
+    long maxTimeDiff = 75;
+    
     /**
      * The robot drives forward for forwardDriveTime, then spin clockwise until 
      * the robot finds the left side of the bottom goal. Once it finds the tape, 
@@ -26,9 +30,17 @@ public class Team3464_2013 extends SimpleRobot {
     public void autonomous() {
         long startTime = System.currentTimeMillis();
         while (System.currentTimeMillis() - startTime < forwardDriveTime)
-            drive.tankDrive(-autoSpeed, -autoSpeed);
-        while(topSensor.get() && isAutonomous())
-            drive.tankDrive(-autoSpeed, autoSpeed);
+            drive.tankDrive(-autoSpeed, -autoSpeed);        
+        while(isAutonomous()) {
+            if(!topSensor.get() && topTime == -1)
+                topTime = System.currentTimeMillis();
+            if((System.currentTimeMillis() - topTime >  maxTimeDiff) && topTime != -1) {
+                if(!lowSensor.get()) topTime = -1;
+                else break;
+            }
+            
+            drive.tankDrive(-4*autoSpeed/5, 4*autoSpeed/5);
+        }
         while(lowSensor.get() && isAutonomous())
             drive.tankDrive(-autoSpeed, -autoSpeed);
         
