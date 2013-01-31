@@ -8,6 +8,8 @@ package robotcode;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SimpleRobot;
+import edu.wpi.first.wpilibj.Joystick;
+
 
 public class Team3464_2013 extends SimpleRobot {
     
@@ -16,10 +18,15 @@ public class Team3464_2013 extends SimpleRobot {
     RobotDrive drive = new RobotDrive(1,3,2,4);
     DigitalInput topSensor = new DigitalInput(1);
     DigitalInput lowSensor = new DigitalInput(2);
+    Joystick leftJoy = new Joystick(1);
+    Joystick rightJoy = new Joystick(2);
+    double joyDeadZone = 0.15;
     
-    long topTime = -1;
-    long maxTimeDiff = 75;
+    long firstTime = -1;
+    long lastTime = -1;
+    long maxTimeDiff = 50;
     
+    long correctionTime = 50; 
     /**
      * The robot drives forward for forwardDriveTime, then spin clockwise until 
      * the robot finds the left side of the bottom goal. Once it finds the tape, 
@@ -30,40 +37,33 @@ public class Team3464_2013 extends SimpleRobot {
         long startTime = System.currentTimeMillis();
         while (System.currentTimeMillis() - startTime < forwardDriveTime)
             drive.tankDrive(-autoSpeed, -autoSpeed);        
-        while(isAutonomous()) {
-            //If the topTime is -1, it hasn't been set yet.
-            if(!topSensor.get() && topTime == -1)
-                topTime = System.currentTimeMillis();
-            //This might fix our corner case problem. We need the actual robot to test it, though.
-            //if(!lowSensor.get()) topTime = -1;
-            //If the time since top sensor was set is greater than max diff time, we need to check the low sensor.
-            if((System.currentTimeMillis() - topTime >  maxTimeDiff) && topTime != -1) {
-                if(!lowSensor.get()) topTime = -1;
-                else break;
-            }
-            
-            drive.tankDrive(-4*autoSpeed/5, 4*autoSpeed/5);
+        while(topSensor.get() && isAutonomous()){
+            drive.tankDrive(-.8*autoSpeed, .8*autoSpeed);
+        }
+        firstTime = System.currentTimeMillis();
+        while(!topSensor.get()){
+            drive.tankDrive(-.8*autoSpeed, .8*autoSpeed);
+        }
+        lastTime = System.currentTimeMillis();
+        while(System.currentTimeMillis() - lastTime < (lastTime-firstTime)){
+            drive.tankDrive(.85*autoSpeed, -.85*autoSpeed);
         }
         while(lowSensor.get() && isAutonomous())
             drive.tankDrive(-autoSpeed, -autoSpeed);
-        
+        long tmp = System.currentTimeMillis();
+        while(System.currentTimeMillis() - tmp <= correctionTime)
+            drive.tankDrive(-0.3, 0.3);
     }
 
     /**
      * 
      */
     public void operatorControl() {
-        /*while(lowSensor.get() && isOperatorControl())
-            drive.tankDrive(-.4,-.4);
-        */
-//        DigitalInput topSensor = new DigitalInput(5);
-//        DigitalInput lowSensor = new DigitalInput(6);
-//        RobotDrive drive = new RobotDrive(1,2,3,4);
-//        while(topSensor.get() && isOperatorControl())
-//            drive.tankDrive(.4, -.4);
-//        long start = System.currentTimeMillis();
-//        while(lowSensor.get() && isOperatorControl() && (System.currentTimeMillis() - start <= 30000))
-//            drive.tankDrive(-.4, -.4);
+        while(isOperatorControl()) {
+            drive.tankDrive(leftJoy.getMagnitude() < joyDeadZone ? 0 : leftJoy.getAxis(Joystick.AxisType.kY),
+                    rightJoy.getMagnitude() < joyDeadZone ? 0 : rightJoy.getAxis(Joystick.AxisType.kY));
+            
+        }
     }
    
     /**
