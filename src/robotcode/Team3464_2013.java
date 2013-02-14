@@ -70,11 +70,11 @@ public class Team3464_2013 extends SimpleRobot {
     public void operatorControl() {
         frisbeeServo.set(0);
         while(isOperatorControl()) {
+            while(manualClimbOn)
+                manualClimb();
             drive.tankDrive(leftJoy.getMagnitude() < joyDeadZone ? 0 : leftJoy.getAxis(Joystick.AxisType.kY),
                     rightJoy.getMagnitude() < joyDeadZone ? 0 : rightJoy.getAxis(Joystick.AxisType.kY));
         }
-        while(manualClimbOn && isOperatorControl())
-            manualClimb();
     }
    
     /**
@@ -86,7 +86,7 @@ public class Team3464_2013 extends SimpleRobot {
     /*
      * 
      */
-    private String manualClimb(){
+    private void manualClimb(){
         winchMotor.set(leftJoy.getMagnitude() < joyDeadZone ? 0 : leftJoy.getAxis(Joystick.AxisType.kY));
         if(leftJoy.getRawButton(Keybinds.sideForward)){
             leftSideMotor.set(.4);
@@ -110,7 +110,6 @@ public class Team3464_2013 extends SimpleRobot {
             dropperOpen = !dropperOpen;
             frisbeeServo.set(dropperOpen ? 1 : 0);
         }
-        return "( ?° ?? ?°)";
         
     }
    private void autoClimb(){
