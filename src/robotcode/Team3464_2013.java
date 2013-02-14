@@ -6,9 +6,11 @@ package robotcode;
 
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SimpleRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Servo;
 
 
 public class Team3464_2013 extends SimpleRobot {
@@ -20,6 +22,13 @@ public class Team3464_2013 extends SimpleRobot {
     DigitalInput lowSensor = new DigitalInput(2);
     Joystick leftJoy = new Joystick(1);
     Joystick rightJoy = new Joystick(2);
+    Jaguar winchMotor = new Jaguar(3);
+    Jaguar shoulderMotor = new Jaguar(4);
+    Jaguar leftSideMotor = new Jaguar(5);
+    Jaguar rightSideMotor = new Jaguar(6);
+    Servo frisbeeServo = new Servo(7);
+    boolean manualClimbOn = false;
+    boolean dropperOpen = false;
     double joyDeadZone = 0.15;
     
     long firstTime = -1;
@@ -59,17 +68,52 @@ public class Team3464_2013 extends SimpleRobot {
      * 
      */
     public void operatorControl() {
+        frisbeeServo.set(0);
         while(isOperatorControl()) {
             drive.tankDrive(leftJoy.getMagnitude() < joyDeadZone ? 0 : leftJoy.getAxis(Joystick.AxisType.kY),
                     rightJoy.getMagnitude() < joyDeadZone ? 0 : rightJoy.getAxis(Joystick.AxisType.kY));
-            
         }
+        while(manualClimbOn && isOperatorControl())
+            manualClimb();
     }
    
     /**
      * This function is called once each time the robot enters test mode.
      */
     public void test() {
-    
     }
+    
+    /*
+     * 
+     */
+    private String manualClimb(){
+        winchMotor.set(leftJoy.getMagnitude() < joyDeadZone ? 0 : leftJoy.getAxis(Joystick.AxisType.kY));
+        if(leftJoy.getRawButton(Keybinds.sideForward)){
+            leftSideMotor.set(.4);
+            rightSideMotor.set(.4);
+        }
+        else if(leftJoy.getRawButton(Keybinds.sideBackward)){
+            leftSideMotor.set(-.4);
+            rightSideMotor.set(-.4);
+        }
+        else{
+            leftSideMotor.set(0);
+            rightSideMotor.set(0);
+        }
+        if(leftJoy.getRawButton(Keybinds.shoulderForward))
+            shoulderMotor.set(.4);
+        else if(leftJoy.getRawButton(Keybinds.shoulderBackward))
+            shoulderMotor.set(-.4);
+        else
+            shoulderMotor.set(0);
+        if(leftJoy.getRawButton(Keybinds.toggle)){
+            dropperOpen = !dropperOpen;
+            frisbeeServo.set(dropperOpen ? 1 : 0);
+        }
+        return "( ?° ?? ?°)";
+        
+    }
+   private void autoClimb(){
+       //>climbing
+   }
 }
