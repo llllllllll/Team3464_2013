@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SimpleRobot;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.DriverStationLCD;
 
 
@@ -34,8 +34,9 @@ public class Team3464_2013 extends SimpleRobot {
     DigitalInput feederBack = new DigitalInput(4);
 
     boolean dropperOpen = false;
-    double joyDeadZone = 0.15;
+    double shooterJoyDeadZone = 0.15;
     
+    long firstTime, lastTime;
     long correctionTime = 50;
     /**
      * The robot drives forward for forwardDriveTime, then spin clockwise until 
@@ -70,10 +71,10 @@ public class Team3464_2013 extends SimpleRobot {
 	shooter.set(defaultSpeed);
 
 	for(int i = 0; i < 4; ++i) {
-		while(!triggerFront.get()) {
+		while(!feederFront.get()) {
 			feedme.set(0.5);
 		}
-		while(!triggerBack.get()) {
+		while(!feederBack.get()) {
 			feedme.set(-0.5);
 		}
 	}
@@ -85,44 +86,56 @@ public class Team3464_2013 extends SimpleRobot {
 
 	boolean top = false, bot = false, fast_deploy= false;
 	boolean feed = false;
+        boolean chmod = false;
+        boolean arcade = false;
+
+        dslcd.println(DriverStationLCD.Line.kUser3, 1, "Tank mode");
 
         while(isOperatorControl()) {
-            drive.tankDrive(leftJoy.getMagnitude() < joyDeadZone ? 0 : leftJoy.getAxis(Joystick.AxisType.kY),
-                    rightJoy.getMagnitude() < joyDeadZone ? 0 : rightJoy.getAxis(Joystick.AxisType.kY));
+            if(arcade) {
+                drive.arcadeDrive(rightJoy);
+            } else
+                drive.tankDrive(leftJoy.getMagnitude() < shooterJoyDeadZone ? 0 : leftJoy.getAxis(Joystick.AxisType.kY),
+                    rightJoy.getMagnitude() < shooterJoyDeadZone ? 0 : rightJoy.getAxis(Joystick.AxisType.kY));
 
-	    if(!top && joy.getRawButton(adjustUp)) {
+	    if(!top && shooterJoy.getRawButton(Keybinds.adjustUp)) {
 		shooterSpeed += 0.05;
 		if(shooterSpeed > 1.0) shooterSpeed = 1.0;
 		dslcd.println(DriverStationLCD.Line.kUser2, 1, "Shooter speed" + shooterSpeed);
 	    }
-	    if(!bot && joy.getRawButton(adjustDown)) {
+	    if(!bot && shooterJoy.getRawButton(Keybinds.adjustDown)) {
 		shooterSpeed -= 0.05;
 		if(shooterSpeed < 0.0) shooterSpeed = 0.0;
 		dslcd.println(DriverStationLCD.Line.kUser2, 1, "Shooter speed" + shooterSpeed);
 	    }
-	    if(!fast_deploy && joy.getRawButton(start)) {
+	    if(!fast_deploy && shooterJoy.getRawButton(Keybinds.start)) {
 		shooterSpeed = defaultSpeed;
 		dslcd.println(DriverStationLCD.Line.kUser2, 1, "Shooter speed" + shooterSpeed);
 	    }
+            if(!chmod && rightJoy.getRawButton(Keybinds.chmod)) {
+		arcade = !arcade;
+		dslcd.println(DriverStationLCD.Line.kUser3, 1, (arcade ? "Arcade" : "Tank") + " mode");
+	    }
 
-	    top = (top != joy.getRawButton(adjustUp)) ? joy.getRawButton(adjustUp) : top;
-	    bot = (bot != joy.getRawButton(adjustDown)) ? joy.getRawButton(adjustDown) : bot;
-	    fast_deploy = (fast_deploy != joy.getRawButton(start)) ? joy.getRawButton(start) : fast_deploy;
+	    top = (top != shooterJoy.getRawButton(Keybinds.adjustUp)) ? shooterJoy.getRawButton(Keybinds.adjustUp) : top;
+	    bot = (bot != shooterJoy.getRawButton(Keybinds.adjustDown)) ? shooterJoy.getRawButton(Keybinds.adjustDown) : bot;
+	    fast_deploy = (fast_deploy != shooterJoy.getRawButton(Keybinds.start)) ? shooterJoy.getRawButton(Keybinds.start) : fast_deploy;
+	    chmod = (chmod != rightJoy.getRawButton(Keybinds.chmod)) ? shooterJoy.getRawButton(Keybinds.chmod) : chmod;
 
-	    if(joy.getRawButton(stop) && shooterSpeed != 0.0) {
+	    if(shooterJoy.getRawButton(Keybinds.kill) && shooterSpeed != 0.0) {
 		shooterSpeed = 0.0;
 		dslcd.println(DriverStationLCD.Line.kUser2, 1, "Shooter speed" + shooterSpeed);
 	    }
 
 	    shooter.set(shooterSpeed);
 
-	    feed = (joy.getRawButton(feedDisk) || feed) && !triggerFront.get();
+	    feed = (shooterJoy.getRawButton(Keybinds.feedDisk) || feed) && !feederFront.get();
 	    if(feed) {
 		triggerSpeed = 0.5;
 		dslcd.println(DriverStationLCD.Line.kUser3, 1, "Fire in the hole.");
 	    }
 	    else {
-		triggerSpeed = !triggerBack.get() ? -0.5 : 0.0;
+		triggerSpeed = !feederBack.get() ? -0.5 : 0.0;
 		dslcd.println(DriverStationLCD.Line.kUser3, 1, "Ready to fire.");
 	    }
 

@@ -14,4 +14,6 @@ public class Keybinds {
     static int adjustDown = 3;
 
     static int autoAim = 11;
+    
+    static int chmod = 2;
 }
